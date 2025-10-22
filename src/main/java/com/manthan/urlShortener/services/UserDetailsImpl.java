@@ -22,7 +22,7 @@ public class UserDetailsImpl implements UserDetails {
         return authorities;
     }
 
-    public UserDetailsImpl(Collection<? extends GrantedAuthority> authorities, String email, long id, String password, String username) {
+    public UserDetailsImpl(Collection<? extends GrantedAuthority> authorities, String email, long id, String username, String password) {
         this.authorities = authorities;
         this.email = email;
         this.id = id;
@@ -43,7 +43,7 @@ public class UserDetailsImpl implements UserDetails {
     public static UserDetailsImpl build(User user){
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole());
         return new UserDetailsImpl(Collections.singletonList(authority), user.getEmail(),
-                user.getId(), user.getUsername() , user.getPassword()
+                user.getId(), user.getUserName() , user.getPassword()
                 );
     }
 }

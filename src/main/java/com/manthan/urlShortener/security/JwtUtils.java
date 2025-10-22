@@ -1,14 +1,14 @@
 package com.manthan.urlShortener.security;
 
 import com.manthan.urlShortener.services.UserDetailsImpl;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
 import java.util.stream.Collectors;
@@ -23,7 +23,8 @@ public class JwtUtils {
     private long expirationMs;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(secret));
+        // Use plain string bytes if secret is not base64 encoded
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     // Extract JWT from header
@@ -50,30 +51,31 @@ public class JwtUtils {
                 .claim("roles", roles)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(getSigningKey())
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String getUserNameFromJwtToken(String token) {
         if (token == null || token.isEmpty()) return null;
 
-        return Jwts.parser()
-                .verifyWith((SecretKey) getSigningKey())
+        Claims claims = Jwts.parser()
+                .setSigningKey(getSigningKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
-    }
+                .parseClaimsJws(token)
+                .getBody();
 
+        return claims.getSubject();
+    }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().verifyWith((SecretKey) getSigningKey())
-                    .build().parseSignedClaims(token);
+            Jwts.parser()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
         }
     }
-
 }

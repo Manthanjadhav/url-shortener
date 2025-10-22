@@ -21,3 +21,10 @@ jwt:
   secret: mySuperSecretKey1234567890123456  # must be at least 32 characters for HS256
   expiration-ms: 86400000                   # token expiration in milliseconds (1 day)
 
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG
+    com.manthan.urlShortener: DEBUG
+
+
